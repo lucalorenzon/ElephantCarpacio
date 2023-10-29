@@ -8,6 +8,7 @@ impl ForGettingTaxRate for TaxRateRepository {
             "UT" => 6.85,
             "NV" => 8.00,
             "TX" => 6.25,
+            "AL" => 4.00,
             _ => panic!("invalid country")
         }
     }
