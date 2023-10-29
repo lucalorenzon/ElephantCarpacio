@@ -7,7 +7,8 @@ impl ForGettingDiscountRate for DiscountRateRepo{
         match amount {
             amount if amount > 1000f32 && amount <= 5000f32 => 3f32,
             amount if amount > 5000f32 && amount <= 7000f32 => 5f32,
-            amount if amount > 7000f32 => 7f32,
+            amount if amount > 7000f32 && amount <= 10000f32 => 7f32,
+            amount if amount > 10000f32 => 10f32,
             _ => 0.0f32
         }
     }
