@@ -218,4 +218,21 @@ mod tests {
         assert_eq!(result.state, state);
     }
 
+    #[test]
+    fn should_return_order_value_with_7perc_discount_and_ut_tax_from_state_ut_and_total_order_gt_7000() {
+        let num_items = 110i32;
+        let price = 70f32;
+        let state = "UT";
+        let total_order = num_items as f32 * price;
+        let total_discount = total_order * 7f32/100f32;
+        let total_before_tax = total_order - total_discount;
+        let total_tax = total_before_tax * 6.85f32/100f32;
+        let expected_order_value = total_before_tax + total_tax;
+        let calculator =
+            OrderValueCalculator::new(TaxRateRepository{}, DiscountRateRepo{});
+        let result = calculator.calculate(num_items, price, state);
+        assert_eq!(result.tax_rate, 6.85f32);
+        assert_eq!(result.order_value, expected_order_value);
+        assert_eq!(result.state, state);
+    }
 }
