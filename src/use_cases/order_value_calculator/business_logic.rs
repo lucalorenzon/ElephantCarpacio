@@ -1,31 +1,38 @@
+use crate::use_cases::order_value_calculator::driven_port::for_getting_tax_rate::ForGettingTaxRate;
 use crate::use_cases::order_value_calculator::driving_port::for_calculating_order_value::{ForCalculatingOrderValue, OrderValue};
 
-pub struct OrderValueCalculator{
-    tax_rate: f32
+pub struct OrderValueCalculator<T:ForGettingTaxRate>{
+    tax_repo: T
 }
 
-impl OrderValueCalculator {
-    pub fn new() -> Self {
+impl <T:ForGettingTaxRate> OrderValueCalculator<T> {
+    pub fn new(tax_repo: T) -> Self {
         OrderValueCalculator{
-            tax_rate: 6.85f32,
+            tax_repo,
         }
+    }
+
+    pub fn get_tax_rate(&self, state: &str) -> f32 {
+        self.tax_repo.get_tax_rate(state)
     }
 }
 
-impl ForCalculatingOrderValue for OrderValueCalculator {
+impl <T:ForGettingTaxRate> ForCalculatingOrderValue for OrderValueCalculator<T> {
     fn calculate(&self, num_items: i32, price: f32, state: &str) -> OrderValue {
         let total_order = num_items as f32 * price;
         let total_discount = total_order * 0f32;
         let total_before_tax = total_order - total_discount;
-        let total_tax = total_before_tax * self.tax_rate/100f32;
+        let tax_rate = self.get_tax_rate(state);
+        let total_tax = total_before_tax * tax_rate/100f32;
         let order_value = total_before_tax + total_tax;
-        OrderValue::new(num_items, price, state, self.tax_rate, order_value)
+        OrderValue::new(num_items, price, state, tax_rate, order_value)
     }
 }
 
 
 #[cfg(test)]
 mod tests {
+    use crate::driven_adapters::tax_rate_repository::TaxRateRepository;
     use crate::use_cases::order_value_calculator::business_logic::OrderValueCalculator;
     use crate::use_cases::order_value_calculator::driving_port::for_calculating_order_value::ForCalculatingOrderValue;
 
@@ -33,7 +40,8 @@ mod tests {
     fn should_echo_input_received(){
         let num_items = 100;
         let price = 10f32;
-        let calculator = OrderValueCalculator::new();
+        let tax_repo = TaxRateRepository{};
+        let calculator = OrderValueCalculator::new(tax_repo);
         let result = calculator.calculate(num_items, price, "UT");
         assert_eq!(result.num_items, num_items);
         assert_eq!(result.price, price);
@@ -49,8 +57,8 @@ mod tests {
         let total_before_tax = total_order - total_discount;
         let total_tax = total_before_tax * tax_rate/100f32;
         let expected_order_value = total_before_tax + total_tax;
-
-        let calculator = OrderValueCalculator::new();
+        let tax_repo = TaxRateRepository{};
+        let calculator = OrderValueCalculator::new(tax_repo);
         let result = calculator.calculate(num_items, price, "UT");
         assert_eq!(result.tax_rate, 6.85);
         assert_eq!(result.order_value, expected_order_value);
@@ -67,12 +75,31 @@ mod tests {
         let total_before_tax = total_order - total_discount;
         let total_tax = total_before_tax * tax_rate/100f32;
         let expected_order_value = total_before_tax + total_tax;
-
-        let calculator = OrderValueCalculator::new();
+        let tax_repo = TaxRateRepository{};
+        let calculator = OrderValueCalculator::new(tax_repo);
         let result = calculator.calculate(num_items, price, state);
         assert_eq!(result.tax_rate, 6.85);
         assert_eq!(result.order_value, expected_order_value);
         assert_eq!(result.state, state);
     }
+
+    #[test]
+    fn should_return_order_value_with_0_discount_and_ut_tax_from_state_ut() {
+        let num_items = 100i32;
+        let price = 10f32;
+        let state = "UT";
+        let total_order = num_items as f32 * price;
+        let total_discount = total_order * 0f32;
+        let total_before_tax = total_order - total_discount;
+        let total_tax = total_before_tax * 6.85/100f32;
+        let expected_order_value = total_before_tax + total_tax;
+        let tax_repo = TaxRateRepository{};
+        let calculator = OrderValueCalculator::new(tax_repo);
+        let result = calculator.calculate(num_items, price, state);
+        assert_eq!(result.tax_rate, 6.85);
+        assert_eq!(result.order_value, expected_order_value);
+        assert_eq!(result.state, state);
+    }
+
 
 }
