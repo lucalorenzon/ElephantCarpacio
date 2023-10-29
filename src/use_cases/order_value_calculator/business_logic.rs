@@ -28,7 +28,7 @@ impl <TR:ForGettingTaxRate, DR:ForGettingDiscountRate> ForCalculatingOrderValue 
     fn calculate(&self, num_items: i32, price: f32, state: &str) -> OrderValue {
         let total_order = num_items as f32 * price;
         let discount_rate = self.get_discount_rate(total_order);
-        let total_discount = total_order * discount_rate;
+        let total_discount = total_order * discount_rate/100f32;
         let total_before_tax = total_order - total_discount;
         let tax_rate = self.get_tax_rate(state);
         let total_tax = total_before_tax * tax_rate/100f32;
@@ -184,11 +184,29 @@ mod tests {
 
     #[test]
     fn should_return_order_value_with_3perc_discount_and_ut_tax_from_state_ut_and_total_order_gt_1000() {
-        let num_items = 100i32;
-        let price = 100f32;
+        let num_items = 200i32;
+        let price = 10f32;
         let state = "UT";
         let total_order = num_items as f32 * price;
-        let total_discount = total_order * 3f32;
+        let total_discount = total_order * 3f32/100f32;
+        let total_before_tax = total_order - total_discount;
+        let total_tax = total_before_tax * 6.85f32/100f32;
+        let expected_order_value = total_before_tax + total_tax;
+        let calculator =
+            OrderValueCalculator::new(TaxRateRepository{}, DiscountRateRepo{});
+        let result = calculator.calculate(num_items, price, state);
+        assert_eq!(result.tax_rate, 6.85f32);
+        assert_eq!(result.order_value, expected_order_value);
+        assert_eq!(result.state, state);
+    }
+
+    #[test]
+    fn should_return_order_value_with_5perc_discount_and_ut_tax_from_state_ut_and_total_order_gt_5000() {
+        let num_items = 110i32;
+        let price = 50f32;
+        let state = "UT";
+        let total_order = num_items as f32 * price;
+        let total_discount = total_order * 5f32/100f32;
         let total_before_tax = total_order - total_discount;
         let total_tax = total_before_tax * 6.85f32/100f32;
         let expected_order_value = total_before_tax + total_tax;

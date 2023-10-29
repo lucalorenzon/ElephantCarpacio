@@ -5,7 +5,8 @@ pub struct DiscountRateRepo;
 impl ForGettingDiscountRate for DiscountRateRepo{
     fn get_discount_rate(&self, amount: f32) -> f32 {
         match amount {
-            amount if amount > 1000f32 => 3f32,
+            amount if amount > 1000f32 && amount <= 5000f32 => 3f32,
+            amount if amount > 5000f32 => 5f32,
             _ => 0.0f32
         }
     }
