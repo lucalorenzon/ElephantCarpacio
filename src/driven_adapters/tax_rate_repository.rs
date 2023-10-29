@@ -6,6 +6,7 @@ impl ForGettingTaxRate for TaxRateRepository {
     fn get_tax_rate(&self, state: &str) -> f32 {
         match state {
             "UT" => 6.85,
+            "NV" => 8.00,
             _ => panic!("invalid country")
         }
     }
