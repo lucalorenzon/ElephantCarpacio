@@ -33,7 +33,7 @@ impl <TR:ForGettingTaxRate, DR:ForGettingDiscountRate> ForCalculatingOrderValue 
         let tax_rate = self.get_tax_rate(state);
         let total_tax = total_before_tax * tax_rate/100f32;
         let order_value = total_before_tax + total_tax;
-        OrderValue::new(num_items, price, state, tax_rate, order_value)
+        OrderValue::new(num_items, price, state, tax_rate, discount_rate, order_value)
     }
 }
 
