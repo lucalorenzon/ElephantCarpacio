@@ -7,6 +7,7 @@ impl ForGettingTaxRate for TaxRateRepository {
         match state {
             "UT" => 6.85,
             "NV" => 8.00,
+            "TX" => 6.25,
             _ => panic!("invalid country")
         }
     }
